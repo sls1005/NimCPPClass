@@ -96,4 +96,4 @@ main()
 
 * Inheritance is currently not supported.
 
-This module uses an undocumented pragma, `exportcpp`, so it might not be compatible some versions of Nim compiler.
+* This module uses an undocumented pragma, `exportcpp`, so it might not be compatible with some versions of Nim compiler.
