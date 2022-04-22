@@ -110,7 +110,7 @@ class """ #C++ code to emit
   code.add newLit("};")
   obj.add(fields)
   result = quote do:
-    type `typeName` {.importcpp, inheritable, pure, cppNonPod, nodecl.} = `obj`
+    type `typeName` {.importcpp, cppNonPod, inheritable, nodecl.} = `obj`
     {.emit: `code`.}
     `functionsToImport`
     `functionsToExport`

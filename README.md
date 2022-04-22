@@ -84,16 +84,61 @@ proc main =
 main()
 ```
 
+Inheritance is supported, but only from one parent. The parent must be inheritable.
+
+```nim
+import cppclass
+
+cppclass A:
+  private:
+    a: int
+  public:
+    proc get(): int =
+      this.a
+    proc store(a: int) =
+      this.a = a
+
+cppclass B(A):
+  public:
+    b: int
+
+var foo: B
+foo.store(1)
+echo foo.get()
+```
+
+In the above example, `B` inherits `A`. The mode is default to `public`. You may use some pragma-like syntax to change it.
+
+```nim
+import cppclass
+
+cppclass A:
+  protected:
+    a: int
+
+cppclass B(A {.private.}):
+  public:
+    b: int
+    proc get(): int =
+      this.a
+    proc store(a: int) =
+      this.a = a
+
+var foo: B
+foo.store(1)
+echo foo.get()
+```
+
 ### Note
 
 * Generic parameters are not supported, as well as nested classes.
+
+* Like in C++, the variable `this` is a `ptr` to the object that uses the member function.
 
 * Do not use `static[T]` or `lent T` as parameter or return type.
 
 * A class can have GC'd members (`ref`, `seq`, ...), but they should be `public` and initialized with `wasMoved`. They have to be destroyed properly.
 
 * A class can not be exported because the emitted code is invisible from other modules. It has to be included.
-
-* Inheritance is currently not supported.
 
 * This module uses an undocumented pragma, `exportcpp`, so it might not be compatible with some versions of Nim compiler.
