@@ -4,13 +4,6 @@ let
   field = def[0]
   fieldType = def[1][0]
   member = field.strVal
-var 
-  memberType: NimNode
-
-case fieldType.kind:
-of nnkIdent:
-  memberType = fieldType
-else:
   memberType = typeList.identify(fieldType)
 
 fields.add newIdentDefs(
