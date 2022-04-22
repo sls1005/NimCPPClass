@@ -55,7 +55,7 @@ class """ #C++ code to emit
       error("$1 as base type is not supported." % repr(className[1]), className[1])
     obj.add newTree(
       nnkOfInherit,
-       baseType
+      baseType
     )
     code.add(
       newLit(" : $1 " % mode),
