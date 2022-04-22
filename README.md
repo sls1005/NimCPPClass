@@ -107,7 +107,7 @@ foo.store(1)
 echo foo.get()
 ```
 
-In the above example, `B` inherits `A`. The mode is default to `public`. You may use some pragma-like syntax to change it.
+In the above example, `B` inherits `A`. The mode is default to `public`. This can be changed by using some pragma-like syntax.
 
 ```nim
 import cppclass
