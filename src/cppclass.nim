@@ -1,30 +1,83 @@
-import std/[macros, random, strformat, strutils, tables]
+import std/[macros, random, strformat, strutils]
+import ./cppclass/typeLists
 
 when not defined(cpp):
-  {.error: "This can only be used with the C++ backend.".}
+  error("This can only be used with the C++ backend.")
 
 proc empty(node: NimNode): bool {.compileTime.} =
   node.kind == nnkEmpty
 
 macro cppclass*(className, definition: untyped): untyped =
-  expectKind(className, nnkIdent)
-  expectKind(definition, nnkStmtList)
   var
-    classNameStr = repr(className)
-    r = initRand(len(classNameStr) + ord(classNameStr[^1]))
     functionsToImport = newStmtList()
     functionsToExport = newStmtList()
-    types = newNimNode(nnkTypeSection)
+    obj = newNimNode(nnkObjectTy)
     fields = newNimNode(nnkRecList)
     code = newTree(
       nnkBracket,
       newLit("""
 /*TYPESECTION*/
-class $1 {
-""" % classNameStr #C++ code to emit
+class """ #C++ code to emit
       )
     )
-    typeList: Table[string, NimNode]
+    r: Rand
+    typeName: NimNode
+    typeNameStr: string
+    typeList: TypeList
+  obj.add(newEmptyNode())
+  case className.kind:
+  of nnkIdent:
+    typeName = className
+    code.add(newLit(typeName.strVal))
+    obj.add(newEmptyNode())
+  of nnkCall:
+    #inheritance
+    case (className[0]).kind:
+    of nnkIdent:
+      typeName = className[0]
+      code.add(newLit(typeName.strVal))
+    of nnkBracketExpr:
+      error("Generic parameters are not supported", className[0])
+    else:
+      error("Invalid name: " & repr(className[0]), className[0])
+    case (className[1]).kind:
+    of nnkIdent:
+      let baseType = className[1]
+      code.add(
+        newLit(" : public "),
+        baseType
+      )
+      obj.add newTree(
+        nnkOfInherit,
+        baseType
+      )
+    of nnkPragmaExpr:
+      let
+        baseType = className[1][0]
+        mode = repr(className[1][1][0])
+      if mode in ["private", "protected",  "public"]:
+        code.add(
+          newLit(" : $1 " % mode),
+          baseType
+        )
+        obj.add newTree(
+          nnkOfInherit,
+          baseType
+        )
+      else:
+        error("Unknown mode: " & mode, className[1][1])
+    else:
+      error("$1 as base type is not supported." % repr(className[1]), className[1])
+  of nnkBracketExpr:
+    error("Generic parameters are not supported", className)
+  else:
+    error("Invalid name: " & repr(className), className)
+
+  code.add newLit(" {")
+  typeNameStr = typeName.strVal
+  r = initRand(len(typeNameStr) + ord(typeNameStr[^1]))
+  expectKind(definition, nnkStmtList)
+
   for node in definition:
     case node.kind:
     of nnkCall:
@@ -55,16 +108,11 @@ class $1 {
     else:
       error("Invalid statement: " & repr(node), node)
   code.add newLit("};")
-  let obj = newTree(
-    nnkObjectTy,
-    newEmptyNode(),
-    newEmptyNode(),
-    fields
-  )
+  obj.add(fields)
   result = quote do:
-    type `className` {.importcpp, cppNonPod, nodecl.} = `obj`
+    type `typeName` {.importcpp, inheritable, pure, cppNonPod, nodecl.} = `obj`
     {.emit: `code`.}
     `functionsToImport`
     `functionsToExport`
-  if len(types) > 0:
-    result.insert(1, types)
+  if len(typeList) > 0:
+    result.insert(1, typeList.toNimNode())

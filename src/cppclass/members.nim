@@ -1,33 +1,24 @@
 #Included by cppclass.nim
 expectKind(def[1], nnkStmtList)
 let
-  member = repr(def[0])
-  memberType = def[1][0]
-var
-  typeName: NimNode
-case memberType.kind:
+  field = def[0]
+  fieldType = def[1][0]
+  member = field.strVal
+var 
+  memberType: NimNode
+
+case fieldType.kind:
 of nnkIdent:
-  typeName = memberType
+  memberType = fieldType
 else:
-  let t = repr(memberType)
-  if t in typeList:
-    typeName = typeList[t]
-  else:
-    typeName = genSym(nskType)
-    types.add newTree(
-      nnkTypeDef,
-      typeName,
-      newEmptyNode(),
-      memberType
-    )
-    typeList[t] = typeName
+  memberType = typeList.identify(fieldType)
 
 fields.add newIdentDefs(
-  ident(member),
-  memberType
+  field,
+  fieldType
 )
 
 code.add(
-  typeName,
+  memberType,
   newLit(" $1; " % member)
 )

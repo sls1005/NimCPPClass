@@ -7,7 +7,7 @@ var
   destructor = false
   operator = false
   star = false
-  procName, typeName: NimNode
+  procName: NimNode
   funcName: string
 let
   returnType = def.params[0]
@@ -25,18 +25,18 @@ if not empty(def[2]):
 case procName.kind:
 of nnkAccQuoted:
   if len(procName) == 2:
-    if repr(procName[0]) == "~" and repr(procName[1]) == classNameStr:
+    if repr(procName[0]) == "~" and repr(procName[1]) == typeNameStr:
       destructor = true
-      funcName = "~" & classNameStr
-  elif repr(procName[0]) == classNameStr:
+      funcName = "~" & typeNameStr
+  elif repr(procName[0]) == typeNameStr:
     constructor = true
-    funcName = classNameStr
+    funcName = typeNameStr
   if not constructor and not destructor:
     operator = true
     include ./operators
 of nnkIdent:
-  funcName = repr(procName)
-  if funcName == classNameStr:
+  funcName = procName.strVal
+  if funcName == typeNameStr:
     constructor = true
 else:
   error("invalid name: " & repr(procName), def[0])
@@ -49,44 +49,29 @@ if not empty(returnType):
 
 case returnType.kind:
 of nnkEmpty:
-  typeName = (
-    if constructor or destructor:
-      newLit("")
-    else:
-      newLit("void")
-  )
+  if not constructor and not destructor:
+    code.add newLit("void")
 of nnkIdent:
-  if repr(returnType) == "void":
-    typeName = newLit("void")
+  if returnType.strVal == "void":
+    code.add newLit("void")
   else:
-    typeName = returnType
+    code.add(returnType)
 else:
   if len(returnType) > 1:
     if repr(returnType[0]) in ["static", "lent"]:
       error("$1 is not supported." % repr(returnType), returnType)
-  let t = repr(returnType)
-  if t in typeList:
-    typeName = typeList[t]
-  else:
-    typeName = genSym(nskType)
-    types.add newTree(
-      nnkTypeDef,
-      typeName,
-      newEmptyNode(),
-      returnType
-    )
-    typeList[t] = typeName
+  code.add(typeList.identify(returnType))
 
-code.add(typeName)
 code.add newLit(" $1(" % funcName)
 
 if len(def.params) > 1:
   var flag = true
   for parameter in def.params[1..^1]:
-    let parameterType = parameter[^2]
-    var parameterNames: seq[string]
+    var
+      parameterType = parameter[^2]
+      parameterNames: seq[string]
     for p in parameter[0..^3]:
-      parameterNames.add(repr(p))
+      parameterNames.add(p.strVal)
     case parameterType.kind:
     of nnkEmpty:
       if len(parameterNames) > 1:
@@ -94,33 +79,20 @@ if len(def.params) > 1:
       else:
         error("$1 needs a type." % parameterNames[0], parameterType)
     of nnkIdent:
-      if repr(parameterType) == "void":
-        typeName = newLit("void")
-      else:
-        typeName = parameterType
+      if parameterType.strVal == "void":
+        parameterType = newLit("void")
     else:
       if len(parameterType) > 1:
         if repr(parameterType[0]) == "static":
           error("$1 is not supported." % repr(parameterType), parameterType)
-      let t = repr(parameterType)
-      if t in typeList:
-        typeName = typeList[t]
-      else:
-        typeName = genSym(nskType)
-        types.add newTree(
-          nnkTypeDef,
-          typeName,
-          newEmptyNode(),
-          parameterType
-        )
-        typeList[t] = typeName
+      parameterType = typeList.identify(parameterType)
     for n in parameterNames:
       if flag:
         flag = false
       else:
         code.add newLit(", ")
       code.add(
-        typeName,
+        parameterType,
         newLit(" " & n)
       )
 
@@ -135,7 +107,7 @@ if not constructor and not destructor: #import
   (func1[3]).insert(
     1, newIdentDefs(
       genSym(nskParam),
-      newTree(nnkVarTy, className)
+      newTree(nnkVarTy, typeName)
     )
   )
   let importing = quote do:
@@ -147,13 +119,13 @@ if not constructor and not destructor: #import
 
 if not empty(def[^1]): #implement
   let
-    wholeName = newLit(classNameStr & "::" & funcName)
-    symbol = "_$1_$2$3".format(
-      classNameStr, (
+    wholeName = newLit(typeNameStr & "::" & funcName)
+    cmacro = "_$1_$2$3".format(
+      typeNameStr, (
       if operator:
         "operator" & $(ord(funcName[^1]))
       elif destructor:
-        $(ord('~')) & classNameStr
+        $(ord('~')) & typeNameStr
       else:
         funcName
       ),
@@ -166,18 +138,18 @@ if not empty(def[^1]): #implement
         "$1 $2$3"
     )
     preventDoubleDeclaration = newLit(fmt"""
-#ifdef {symbol}
+#ifdef {cmacro}
   {declaration}
-  #undef {symbol}
+  #undef {cmacro}
 #else
-  #define {symbol}
+  #define {cmacro}
 #endif
 """)
     exporting = quote do:
       {.exportcpp: `wholeName`, codegenDecl: `preventDoubleDeclaration`, used, cdecl.}
       #the undocumented pragma
     this = quote do:
-      var this {.nodecl, used, importcpp: "this", inject, global.}: ptr `className`
+      var this {.nodecl, used, importcpp: "this", inject, global.}: ptr `typeName`
       #Because {.nodecl.} doesn't work on local variables
   for i in 0 .. 3:
     func2.addPragma(exporting[i])
