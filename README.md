@@ -84,7 +84,7 @@ proc main =
 main()
 ```
 
-Inheritance is supported, but only from one parent. The parent must be inheritable.
+Inheritance is supported, but only from one parent, and parent must be inheritable.
 
 ```nim
 import cppclass
@@ -107,7 +107,7 @@ foo.store(1)
 echo foo.get()
 ```
 
-In the above example, `B` inherits `A`. The mode is default to `public`. This can be changed by using some pragma-like syntax.
+In the above example, `B` inherits from `A`. The mode is default to `public`. This can be changed by using some pragma-like syntax.
 
 ```nim
 import cppclass
