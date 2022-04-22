@@ -84,7 +84,7 @@ proc main =
 main()
 ```
 
-Inheritance is supported, but only from one parent, and parent must be inheritable.
+Inheritance is supported, but only from one parent.
 
 ```nim
 import cppclass
