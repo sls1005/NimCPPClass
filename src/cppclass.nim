@@ -28,46 +28,39 @@ class """ #C++ code to emit
   case className.kind:
   of nnkIdent:
     typeName = className
-    code.add(newLit(typeName.strVal))
     obj.add(newEmptyNode())
+    code.add newLit(typeName.strVal)
   of nnkCall:
     #inheritance
+    var
+      baseType: NimNode
+      mode = "public"
     case (className[0]).kind:
     of nnkIdent:
       typeName = className[0]
-      code.add(newLit(typeName.strVal))
+      code.add newLit(typeName.strVal)
     of nnkBracketExpr:
       error("Generic parameters are not supported", className[0])
     else:
       error("Invalid name: " & repr(className[0]), className[0])
     case (className[1]).kind:
-    of nnkIdent:
-      let baseType = className[1]
-      code.add(
-        newLit(" : public "),
-        baseType
-      )
-      obj.add newTree(
-        nnkOfInherit,
-        baseType
-      )
+    of nnkIdent, nnkDotExpr:
+      baseType = className[1]
     of nnkPragmaExpr:
-      let
-        baseType = className[1][0]
-        mode = repr(className[1][1][0])
-      if mode in ["private", "protected",  "public"]:
-        code.add(
-          newLit(" : $1 " % mode),
-          baseType
-        )
-        obj.add newTree(
-          nnkOfInherit,
-          baseType
-        )
-      else:
-        error("Unknown mode: " & mode, className[1][1])
+      baseType = className[1][0]
+      mode = repr(className[1][1][0])
+      if not(mode in ["private", "protected",  "public"]):
+        error("Unknown mode: " & mode, className[1][1][0])
     else:
       error("$1 as base type is not supported." % repr(className[1]), className[1])
+    obj.add newTree(
+      nnkOfInherit,
+       baseType
+    )
+    code.add(
+      newLit(" : $1 " % mode),
+      typeList.identify(baseType)
+    )
   of nnkBracketExpr:
     error("Generic parameters are not supported", className)
   else:

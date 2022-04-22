@@ -24,7 +24,6 @@ cppclass Foo:
         `=destroy`(this.payload)
         wasMoved(this.payload)
       else:
-        this.name = ""
         this.payload = @[]
       echo name & " has been destroyed."
 

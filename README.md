@@ -58,7 +58,7 @@ proc main =
 main()
 ```
 
-Operators can also be defined, but only those valid in C++. Whether valid is checked by the C++ compiler. And they will be transformed into C++ operators. Both `` `+` `` and `` `operator+` `` have the same meaning.
+Operators can also be defined, but only those valid in C++. Whether valid is checked by the C++ compiler. They will be transformed into C++ operators. Both `` `+` `` and `` `operator+` `` have the same meaning.
 
 ```nim
 import cppclass
