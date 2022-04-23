@@ -139,6 +139,8 @@ echo foo.get()
 
 * A class can have GC'd members (`ref`, `seq`, ...), but they should be `public` and initialized with `wasMoved`. They have to be destroyed properly.
 
+* If a field (member) is not initialized, its value is indeterminate, like a variable with `{.noInit.}`.
+
 * A class can not be exported because the emitted code is invisible from other modules. It has to be included.
 
 * This module uses an undocumented pragma, `exportcpp`, so it might not be compatible with some versions of Nim compiler.
