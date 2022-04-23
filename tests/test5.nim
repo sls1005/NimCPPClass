@@ -1,11 +1,11 @@
 import cppclass
 
 type A = object of RootObj
-  a: int
+  a: cint
 
 cppclass B(A):
   public:
-    b: int
+    b: cint
 
 proc `$`(self: B): string =
   $((b: self.b, a: self.a))

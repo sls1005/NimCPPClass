@@ -2,16 +2,16 @@ import cppclass
 
 cppclass A:
   private:
-    a: int
+    a: cint
   public:
-    proc get(): int =
+    proc get(): cint =
       this.a
-    proc store(a: int) =
+    proc store(a: cint) =
       this.a = a
 
 cppclass B(A):
   public:
-    b: int
+    b: int8
 
 {.emit: "#include <iostream>".}
 
@@ -19,7 +19,7 @@ proc main =
   var foo: B
   foo.store(1)
   foo.b = 2
-  echo [foo.get(), foo.b]
+  echo (foo.get(), foo.b)
   {.emit:"""
   B bar;
   bar.store(3);
