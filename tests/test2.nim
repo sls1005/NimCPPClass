@@ -1,17 +1,16 @@
 import cppclass
 
 cppclass A:
-  private:
+  protected:
     a: cint
-  public:
-    proc get(): cint =
-      this.a
-    proc store(a: cint) =
-      this.a = a
 
 cppclass B(A):
   public:
     b: cint
+    proc get(): cint =
+      this.a
+    proc store(a: cint) =
+      this.a = a
 
 {.emit: "#include <iostream>".}
 

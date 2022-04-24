@@ -35,7 +35,7 @@ class """ #C++ code to emit
     #inheritance
     var
       baseType: NimNode
-      mode = "public"
+      mode = "" #default to private
     case (className[0]).kind:
     of nnkIdent:
       typeName = className[0]

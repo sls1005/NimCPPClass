@@ -4,7 +4,7 @@ import cppclass
 type A = object of RootObj
   a: cint
 
-cppclass B(A):
+cppclass B(A {.public.}):
   public:
     b: cint = sqrt(17.0 ^ 5).cint
 

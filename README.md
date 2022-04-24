@@ -104,6 +104,28 @@ Inheritance is supported, but only from one parent.
 import cppclass
 
 cppclass A:
+  protected:
+    a: cint
+
+cppclass B(A):
+  public:
+    b: cint
+    proc get(): cint =
+      this.a
+    proc store(a: cint) =
+      this.a = a
+
+var foo: B
+foo.store(1)
+echo foo.get()
+```
+
+In the above example, `B` inherits from `A`. The mode is default to `private`. This can be changed by using some pragma-like syntax.
+
+```nim
+import cppclass
+
+cppclass A:
   private:
     a: int
   public:
@@ -112,34 +134,12 @@ cppclass A:
     proc store(a: int) =
       this.a = a
 
-cppclass B(A):
+cppclass B(A {.public.}):
   public:
     b: int
 
 var foo: B
-foo.store(1)
-echo foo.get()
-```
-
-In the above example, `B` inherits from `A`. The mode is default to `public`. This can be changed by using some pragma-like syntax.
-
-```nim
-import cppclass
-
-cppclass A:
-  protected:
-    a: int
-
-cppclass B(A {.private.}):
-  public:
-    b: int
-    proc get(): int =
-      this.a
-    proc store(a: int) =
-      this.a = a
-
-var foo: B
-foo.store(1)
+foo.store(2)
 echo foo.get()
 ```
 
