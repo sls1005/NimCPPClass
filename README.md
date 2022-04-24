@@ -84,7 +84,7 @@ proc main =
 main()
 ```
 
-If a field (member) is an `AtomType` like `int` or `float`, it can have a default value. The value has to be something that can be evaluated at the compile time.
+If a field (member) is an `AtomType` like `int` or `float`, it can have a default value. The value must be something that can be evaluated at the compile time.
 
 ```nim
 import std/math
