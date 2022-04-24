@@ -1,40 +1,29 @@
 import cppclass
 
-type FuncPtr = proc(arg: pointer): cint {.cdecl.}
-
-cppclass Caller:
-  protected:
-    f: FuncPtr
-    arg: pointer
+cppclass A:
+  private:
+    a: cint
   public:
-    proc `Caller`(f: FuncPtr, arg: pointer) =
-      this.f = f
-      this.arg = arg
-    proc call(): cint =
-      (this.f)(this.arg)
+    proc get(): cint =
+      this.a
+    proc store(a: cint) =
+      this.a = a
 
-proc initCaller(f: FuncPtr, arg: pointer): Caller {.importcpp: "Caller(@)", constructor.}
+cppclass B(A):
+  public:
+    b: cint
 
-proc foo(p: pointer): cint {.cdecl.} =
-  cast[ptr cint](p)[] + 1
-
-{.emit: """
-#include <iostream>
-
-int bar(void* p) {
-  return *((int*)p) - 1;
-}
-""".}
+{.emit: "#include <iostream>".}
 
 proc main =
-  var
-    n: cint = 1
-    c1 = initCaller(foo, cast[pointer](addr n))
-  echo c1.call()
-  {.emit: """
-  int k = 10;
-  Caller c2(&bar, (void*) &k);
-  std::cout << c2.call() << std::endl;
+  var foo: B
+  foo.store(1)
+  foo.b = 2
+  echo (foo.get(), foo.b)
+  {.emit:"""
+  B bar;
+  bar.store(3);
+  std::cout << bar.get() << std::endl;
   """.}
 
 main()
