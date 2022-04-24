@@ -1,5 +1,5 @@
 import std/[macros, random, strformat, strutils]
-import ./cppclass/typeLists
+import ./cppclass/nameLists
 
 when not defined(cpp):
   error("This can only be used with the C++ backend.")
@@ -13,6 +13,8 @@ macro cppclass*(className, definition: untyped): untyped =
     functionsToExport = newStmtList()
     obj = newNimNode(nnkObjectTy)
     fields = newNimNode(nnkRecList)
+    typeList = initNameList(nskType)
+    valueList = initNameList(nskConst)
     code = newTree(
       nnkBracket,
       newLit("""
@@ -23,7 +25,6 @@ class """ #C++ code to emit
     r: Rand
     typeName: NimNode
     typeNameStr: string
-    typeList: TypeList
   obj.add(newEmptyNode())
   case className.kind:
   of nnkIdent:
@@ -82,7 +83,7 @@ class """ #C++ code to emit
           case def.kind:
           of nnkProcDef, nnkFuncDef:
             include ./cppclass/memberFunctions
-          of nnkCall:
+          of nnkAsgn, nnkCall:
             include ./cppclass/members
           of nnkDiscardStmt:
             discard
@@ -96,6 +97,9 @@ class """ #C++ code to emit
     of nnkProcDef, nnkFuncDef:
       let def = node
       include ./cppclass/memberFunctions
+    of nnkAsgn:
+      let def = node
+      include ./cppclass/members
     of nnkDiscardStmt:
       discard
     else:
@@ -109,3 +113,5 @@ class """ #C++ code to emit
     `functionsToExport`
   if len(typeList) > 0:
     result.insert(1, typeList.toNimNode())
+  if len(valueList) > 0:
+    result.insert(0, valueList.toNimNode())

@@ -84,6 +84,20 @@ proc main =
 main()
 ```
 
+If a field (member) is an `AtomType` like `int` or `float`, it can have a default value. The value has to be something that can be evaluated at the compile time.
+
+```nim
+import std/math
+import cppclass
+
+cppclass Foo:
+  public:
+    a: float = sqrt(17.0 ^ 5)
+
+var f: Foo
+echo f.a
+```
+
 Inheritance is supported, but only from one parent.
 
 ```nim
@@ -137,9 +151,9 @@ echo foo.get()
 
 * Do not use `static[T]` or `lent T` as parameter or return type.
 
-* A class can have GC'd members (`ref`, `seq`, ...), but they should be `public` and initialized with `wasMoved`. They have to be destroyed properly.
+* A class can have GC'd members (`ref`, `seq`, ...), but they must be `public` and initialized with `wasMoved`. They should be destroyed properly.
 
-* If a field (member) is not initialized, its value is indeterminate, like a variable with `{.noInit.}`.
+* If a field (member) is not initialized, its value is undefined.
 
 * A class can not be exported because the emitted code is invisible from other modules. It has to be included.
 
