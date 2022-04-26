@@ -91,18 +91,15 @@ import cppclass
 
 cppclass A:
   protected:
-    a: cint
+    a: cint = 1
 
 cppclass B(A):
   public:
     b: cint
     proc get(): cint =
       this.a
-    proc store(a: cint) =
-      this.a = a
 
 var foo: B
-foo.store(1)
 echo foo.get()
 ```
 
