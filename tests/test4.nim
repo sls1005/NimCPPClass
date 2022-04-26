@@ -19,10 +19,10 @@ cppclass B(A {.public.}):
     proc get(): cint {.final.} =
       this.b
 
-#If a class is marked as {.final.}, it cannot be inherited from.
+#A class marked as {.final.} cannot be inherited from.
 cppclass C(B) {.final.}:
   public:
-    #If a member is marked as {.static.}, it is shared by all instances of a class.
+    #A member marked as {.static.} is shared by all instances of a class.
     c {.static.}: cint
     proc show() =
       echo (this[]).get()
