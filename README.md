@@ -10,7 +10,7 @@ import cppclass
 cppclass X:
   public:
     a: int
-    proc `X`(a = 1, b = 2, c = 3) =
+    proc `X`(a: int = 1, b: int = 2, c: int = 3) =
       (this[]).a = a
       (this[]).b = b
       (this[]).c = c
