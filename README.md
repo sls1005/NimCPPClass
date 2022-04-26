@@ -84,20 +84,6 @@ proc main =
 main()
 ```
 
-If a field (member) is an `AtomType` like `int` or `float`, it can have a default value. The value must be something that can be evaluated at the compile time.
-
-```nim
-import std/math
-import cppclass
-
-cppclass Foo:
-  public:
-    a: float = sqrt(17.0 ^ 5)
-
-var f: Foo
-echo f.a
-```
-
 Inheritance is supported, but only from one parent.
 
 ```nim
