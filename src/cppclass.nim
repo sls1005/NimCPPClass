@@ -19,6 +19,7 @@ macro cppclass*(className, definition: untyped): untyped =
     final = false
     typeList = initNameList(nskType)
     valueList = initNameList(nskConst)
+    variables = newNimNode(nnkVarSection)
     code = newTree(
       nnkBracket,
       newLit("""
@@ -127,5 +128,7 @@ class """ #C++ code to emit
     `functionsToExport`
   if len(typeList) > 0:
     result.insert(1, typeList.toNimNode())
+  if len(variables) > 0:
+    result.insert(0, variables)
   if len(valueList) > 0:
     result.insert(0, valueList.toNimNode())

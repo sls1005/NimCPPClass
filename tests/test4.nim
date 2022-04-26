@@ -22,7 +22,8 @@ cppclass B(A {.public.}):
 #If a class is marked as {.final.}, it cannot be inherited from.
 cppclass C(B) {.final.}:
   public:
-    c: float
+    #If a member is marked as {.static.}, it is shared by all instances of a class.
+    c {.static.}: cint
     proc show() =
       echo (this[]).get()
 
@@ -34,12 +35,15 @@ proc main =
     c1: C
   a1.greet()
   echo a1.get()
+  c1.c = 3
   c1.show()
+  echo c1.c
   {.emit: """
   A a2;
   C c2;
   std::cout << a2.get() << std::endl;
   c2.show();
+  std::cout << c2.c << std::endl;
   """.}
 
 main()
