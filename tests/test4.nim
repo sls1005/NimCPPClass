@@ -5,7 +5,7 @@ cppclass A:
   protected:
     a: cint = 1
   public:
-    #If a member function is marked as {.virtual.}, it can be overriden.
+    #If a member function is marked as {.virtual.}, it can be overridden.
     proc get(): cint {.virtual.} =
       this.a
     #If a member function is marked as {.static.}, it cannot use the pointer 'this'.
@@ -15,7 +15,7 @@ cppclass A:
 cppclass B(A {.public.}):
   public:
     b: cint = 2
-    #If a virtual member function is marked as {.final.}, it cannot be overriden.
+    #If a virtual member function is marked as {.final.}, it cannot be overridden.
     proc get(): cint {.final.} =
       this.b
 
