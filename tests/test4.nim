@@ -19,7 +19,7 @@ cppclass B(A {.public.}):
     proc get(): cint {.final.} =
       this.b
 
-#If a class is marked as {.final.}, it cannot be inherit from.
+#If a class is marked as {.final.}, it cannot be inherited from.
 cppclass C(B) {.final.}:
   public:
     c: float
