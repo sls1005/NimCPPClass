@@ -1,23 +1,26 @@
-import std/math
 import cppclass
 
 type A = object of RootObj
   a: cint
 
 cppclass B(A {.public.}):
+  private:
+    b: cint
   public:
-    b: cint = sqrt(17.0 ^ 5).cint
+    proc `B`(a: cint = 1, b: cint = 2) =
+      this.a = a
+      this.b = b
+    proc get(): cint =
+      this.a + this.b
 
 {.emit: "#include <iostream>".}
 
 proc main =
   var foo: B
-  foo.a = 1
-  echo (foo.a, foo.b)
+  echo foo.get()
   {.emit:"""
   B bar;
-  bar.a = 2;
-  std::cout << bar.a << ", " << bar.b << std::endl;
+  std::cout << bar.get() << std::endl;
   """.}
 
 main()

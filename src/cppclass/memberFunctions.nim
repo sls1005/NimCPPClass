@@ -1,21 +1,22 @@
 #Included by cppclass.nim
 var
   func1 = copy(def)
-  func2 = copy(func1)
+  func2: NimNode
   call = newLit("(#.$1(@))")
   constructor = false
   destructor = false
   operator = false
-  star = false
+  virtual = false
+  final = false
+  staticMemberFunction = false
   procName: NimNode
   funcName: string
 let
   returnType = def.params[0]
-  #static[T] and lent T are not supported
+
 if (def[0]).kind == nnkPostfix:
   assert repr(def[0][0]) == "*"
   procName = copy(def[0][1])
-  star = true
 else:
   procName = copy(def[0])
 
@@ -40,6 +41,30 @@ of nnkIdent:
     constructor = true
 else:
   error("invalid name: " & repr(procName), def[0])
+
+if not empty(def.pragma):
+  for i, p in def.pragma:
+    if p.kind == nnkIdent:
+      case p.strVal:
+      of "virtual":
+        if staticMemberFunction:
+          error("A static member function cannot be virtual.", def.pragma[i])
+        virtual = true
+        code.add(newLit("virtual "))
+        (func1[4]).del(i)
+      of "final":
+        final = true
+        (func1[4]).del(i)
+      of "static":
+        if virtual:
+          error("A virtual member function cannot be static.", def.pragma[i])
+        staticMemberFunction = true
+        code.add(newLit("static "))
+        (func1[4]).del(i)
+      else:
+        discard
+
+func2 = copy(func1)
 
 if not empty(returnType):
   if constructor:
@@ -70,11 +95,22 @@ if len(def.params) > 1:
     var
       parameterType = parameter[^2]
       parameterNames: seq[string]
+    let
+      value = (
+        if empty(parameter[^1]):
+          newEmptyNode()
+        else:
+          valueList.identify(parameter[^1])
+      )
     for p in parameter[0..^3]:
       parameterNames.add(p.strVal)
     case parameterType.kind:
     of nnkEmpty:
-      if len(parameterNames) > 1:
+      if not empty(value):
+        parameterType = typeList.identify(
+          newCall(ident("typeof"), value)
+        )
+      elif len(parameterNames) > 1:
         error("$1 and $2 need a type.".format((parameterNames[0..^2]).join(", "), parameterNames[^1]), parameterType)
       else:
         error("$1 needs a type." % parameterNames[0], parameterType)
@@ -95,15 +131,20 @@ if len(def.params) > 1:
         parameterType,
         newLit(" " & n)
       )
+      if not empty(value):
+        code.add(
+          newLit(" = "),
+          value
+        )
 
-code.add newLit("); ")
+if final:
+  code.add newLit(") final; ")
+else:
+  code.add newLit("); ")
 
 if not constructor and not destructor: #import
   if operator:
-    if star:
-      func1[0][1] = procName
-    else:
-      func1[0] = procName
+    func1.name = procName
   (func1[3]).insert(
     1, newIdentDefs(
       genSym(nskParam),
@@ -151,9 +192,10 @@ if not empty(def[^1]): #implement
     this = quote do:
       var this {.nodecl, used, importcpp: "this", inject, global.}: ptr `typeName`
       #Because {.nodecl.} doesn't work on local variables
+  if not staticMemberFunction:
+    (func2[6]).insert(0, this)
   for i in 0 .. 3:
     func2.addPragma(exporting[i])
-  (func2[6]).insert(0, this)
   func2[0] = genSym(nskProc)
   #The incomplete form is invisible from Nim.
   functionsToExport.add(func2)
