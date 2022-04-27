@@ -1,4 +1,4 @@
-#This file shows some advanced usage of the macro.
+#This file shows some advanced usage of this macro.
 import cppclass
 
 cppclass A:
@@ -15,6 +15,10 @@ cppclass A:
 cppclass B(A {.public.}):
   public:
     b: cint = 2
+    #In this macro, the meaning of 'method' has changed.
+    #It becomes a virtual member function.
+    method store(b: cint) =
+      this.b = b
     #If a virtual member function is marked as {.final.}, it cannot be overridden.
     proc get(): cint {.final.} =
       this.b
@@ -24,8 +28,11 @@ cppclass C(B) {.final.}:
   public:
     #A member marked as {.static.} is shared by all instances of a class.
     c {.static.}: cint
+    method store(c: cint) =
+      this.c = c
     proc show() =
       echo (this[]).get()
+      echo this.c
 
 {.emit: "#include <iostream>".}
 
@@ -35,15 +42,13 @@ proc main =
     c1: C
   a1.greet()
   echo a1.get()
-  c1.c = 3
+  c1.store(3)
   c1.show()
-  echo c1.c
   {.emit: """
   A a2;
   C c2;
   std::cout << a2.get() << std::endl;
   c2.show();
-  std::cout << c2.c << std::endl;
   """.}
 
 main()

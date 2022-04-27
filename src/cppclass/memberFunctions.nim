@@ -2,17 +2,16 @@
 var
   func1 = copy(def)
   func2: NimNode
+  returnType = def.params[0]
   call = newLit("(#.$1(@))")
   constructor = false
   destructor = false
   operator = false
+  staticMemberFunction = false
   virtual = false
   final = false
-  staticMemberFunction = false
   procName: NimNode
   funcName: string
-let
-  returnType = def.params[0]
 
 if (def[0]).kind == nnkPostfix:
   assert repr(def[0][0]) == "*"
@@ -42,6 +41,12 @@ of nnkIdent:
 else:
   error("invalid name: " & repr(procName), def[0])
 
+if def.kind == nnkMethodDef:
+  #A method is transformed into a virtual member function.
+  virtual = true
+  code.add(newLit("virtual "))
+  func1.kind = nnkProcDef
+
 if not empty(def.pragma):
   for i, p in def.pragma:
     if p.kind == nnkIdent:
@@ -69,7 +74,7 @@ func2 = copy(func1)
 if not empty(returnType):
   if constructor:
     error("A constructor cannot have a return type.", returnType)
-  if destructor:
+  elif destructor:
     error("A destructor cannot have a return type.", returnType)
 
 case returnType.kind:
@@ -108,7 +113,7 @@ if len(def.params) > 1:
     of nnkEmpty:
       if not empty(value):
         parameterType = typeList.identify(
-          newCall(ident("typeof"), value)
+          newCall(bindSym("typeof"), value)
         )
       elif len(parameterNames) > 1:
         error("$1 and $2 need a type.".format((parameterNames[0..^2]).join(", "), parameterNames[^1]), parameterType)

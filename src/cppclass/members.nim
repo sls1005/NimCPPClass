@@ -7,7 +7,7 @@ case def.kind:
 of nnkAsgn:
   field = def[0]
   value = valueList.identify(def[1])
-  fieldType = newCall(ident("typeof"), value)
+  fieldType = newCall(bindSym("typeof"), value)
 of nnkCall:
   expectKind(def[1], nnkStmtList)
   field = def[0]

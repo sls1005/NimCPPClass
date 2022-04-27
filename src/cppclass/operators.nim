@@ -3,12 +3,12 @@ var op: string
 case len(procName):
 of 1:
   op = repr(procName[0])
-  funcName = "operator" & op
+  funcName = "operator " & op
 of 2:
   case repr(procName[0]):
   of "operator":
     op = repr(procName[1])
-    funcName = "operator" & op
+    funcName = "operator " & op
     procName = newTree(nnkAccQuoted, procName[1])
   of "new", "delete":
     op = repr(procName[0]) & repr(procName[1])

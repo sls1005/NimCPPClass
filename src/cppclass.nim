@@ -7,6 +7,12 @@ when not defined(cpp):
 proc empty(node: NimNode): bool {.compileTime.} =
   node.kind == nnkEmpty
 
+proc `kind=`(node: var NimNode, kind: NimNodeKind) =
+  var res = newNimNode(kind)
+  for child in node:
+    res.add(child)
+  node = res
+
 macro cppclass*(className, definition: untyped): untyped =
   var
     typeName = className
@@ -17,9 +23,9 @@ macro cppclass*(className, definition: untyped): untyped =
     baseType = newEmptyNode()
     mode = "" #mode of inheritance, default to private
     final = false
+    variables = newNimNode(nnkVarSection)
     typeList = initNameList(nskType)
     valueList = initNameList(nskConst)
-    variables = newNimNode(nnkVarSection)
     code = newTree(
       nnkBracket,
       newLit("""
@@ -90,7 +96,7 @@ class """ #C++ code to emit
         expectKind(node[1], nnkStmtList)
         for def in node[1]:
           case def.kind:
-          of nnkProcDef, nnkFuncDef:
+          of nnkProcDef, nnkFuncDef, nnkMethodDef:
             include ./cppclass/memberFunctions
           of nnkAsgn, nnkCall:
             include ./cppclass/members
@@ -103,7 +109,7 @@ class """ #C++ code to emit
       else:
         let def = node
         include ./cppclass/members
-    of nnkProcDef, nnkFuncDef:
+    of nnkProcDef, nnkFuncDef, nnkMethodDef:
       let def = node
       include ./cppclass/memberFunctions
     of nnkAsgn:
