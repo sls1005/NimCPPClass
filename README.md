@@ -134,7 +134,7 @@ echo foo.get()
 
 * Do not use `static[T]` or `lent T` as parameter or return type.
 
-* A class can have GC'd members (`ref`, `seq`, ...), but they must be `public` and initialized with `wasMoved`. They should be destroyed properly.
+* A class can have GC'ed members (`ref`, `seq`, ...), but they must be `public` and initialized with `wasMoved`. They should be destroyed properly.
 
 * If a field (member) is not initialized, its value is undefined.
 
