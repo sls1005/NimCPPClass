@@ -2,7 +2,7 @@ import std/[macros, random, strformat, strutils]
 import ./cppclass/nameLists
 
 when not defined(cpp):
-  error("This can only be used with the C++ backend.")
+  {.error: "This can only be used with the C++ backend.".}
 
 proc empty(node: NimNode): bool {.compileTime.} =
   node.kind == nnkEmpty
@@ -100,6 +100,9 @@ class """ #C++ code to emit
             include ./cppclass/memberFunctions
           of nnkAsgn, nnkCall:
             include ./cppclass/members
+          of nnkPragma:
+            let pragmas = def
+            include ./cppclass/pragmas
           of nnkDiscardStmt:
             discard
           else:
@@ -115,6 +118,9 @@ class """ #C++ code to emit
     of nnkAsgn:
       let def = node
       include ./cppclass/members
+    of nnkPragma:
+      let pragmas = node
+      include ./cppclass/pragmas
     of nnkDiscardStmt:
       discard
     else:
@@ -138,3 +144,4 @@ class """ #C++ code to emit
     result.insert(0, variables)
   if len(valueList) > 0:
     result.insert(0, valueList.toNimNode())
+
