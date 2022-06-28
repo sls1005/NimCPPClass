@@ -1,3 +1,4 @@
+#Included by cppclass.nim
 for p in pragmas:
   case p.kind:
   of nnkExprColonExpr:

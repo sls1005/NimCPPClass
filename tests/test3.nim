@@ -1,13 +1,15 @@
 import cppclass
 
 type A = object of RootObj
-  a: cint
+  a {.bitsize: 4.}: cint
 
 cppclass B(A {.public.}):
   private:
-    b: cint
+    b {.bitsize: 4.}: cint
   public:
     proc `B`(a: cint = 1, b: cint = 2) =
+      assert a < 8 and b < 8
+      assert a > -9 and b > -9
       this.a = a
       this.b = b
     proc get(): cint =

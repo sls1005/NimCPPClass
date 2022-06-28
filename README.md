@@ -29,7 +29,7 @@ var x: X
 echo x.get()
 ```
 
-The class is emitted to the generated code by using `{.emit.}`. All the methods (or more exactly, member functions) are exported to C++ and imported back, so they can be used both in C++ and Nim. However, constructors and destructors are not imported, please import them by yourself.
+The class is emitted to the generated code by using `{.emit.}`. All the member functions are exported to C++ and imported back, so they can be used both in C++ and Nim. However, constructors and destructors are not imported, please import them by yourself.
 
 ```nim
 import cppclass
