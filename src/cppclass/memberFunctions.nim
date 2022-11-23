@@ -192,7 +192,7 @@ if not empty(def[^1]): #implement
 #endif
 """)
     exporting = quote do:
-      {.exportcpp: `wholeName`, codegenDecl: `preventDoubleDeclaration`, used, cdecl.}
+      {.exportcpp: `wholeName`, codegenDecl: `preventDoubleDeclaration`, used, noconv.}
       #the undocumented pragma
     this = quote do:
       var this {.nodecl, used, importcpp: "this", inject, global.}: ptr `typeName`
