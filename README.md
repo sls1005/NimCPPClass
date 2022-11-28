@@ -138,6 +138,4 @@ echo foo.get()
 
 * If a field (member) is not initialized, its value is undefined.
 
-* A class can not be exported because the emitted code is invisible from other modules. It has to be included.
-
-* This module uses an undocumented pragma, `exportcpp`, so it might not be compatible with some versions of Nim compiler.
+* A class can not be exported because the emitted code is invisible from other modules.

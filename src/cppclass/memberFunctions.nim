@@ -184,18 +184,20 @@ if not empty(def[^1]): #implement
         "$1 $2$3"
     )
     preventDoubleDeclaration = newLit(fmt"""
-#ifdef {cmacro}
-  {declaration}
-  #undef {cmacro}
-#else
-  #define {cmacro}
-#endif
+  extern "C++"
+ #  ifdef {cmacro}
+      {declaration}
+ #    undef {cmacro}
+ #  else
+ #    define {cmacro}
+ #  endif
 """)
+    # `extern "C++"` is used to cancel out the effect of `extern "C"`
     exporting = quote do:
-      {.exportcpp: `wholeName`, codegenDecl: `preventDoubleDeclaration`, used, noconv.}
+      {.exportc: `wholeName`, codegenDecl: `preventDoubleDeclaration`, used, noconv.}
       #the undocumented pragma
     this = quote do:
-      var this {.nodecl, used, importcpp: "this", inject, global.}: ptr `typeName`
+      var this {.importc: "this", nodecl, used, inject, global.}: ptr `typeName`
       #Because {.nodecl.} doesn't work on local variables
   if not staticMemberFunction:
     (func2[6]).insert(0, this)

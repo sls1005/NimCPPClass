@@ -3,6 +3,8 @@ import ./cppclass/nameLists
 
 when not defined(cpp):
   {.error: "This can only be used with the C++ backend.".}
+elif defined(clang):
+  {.passC: "-Wno-duplicate-decl-specifier".}
 
 proc empty(node: NimNode): bool {.compileTime.} =
   node.kind == nnkEmpty
@@ -144,4 +146,3 @@ class """ #C++ code to emit
     result.insert(0, variables)
   if len(valueList) > 0:
     result.insert(0, valueList.toNimNode())
-
