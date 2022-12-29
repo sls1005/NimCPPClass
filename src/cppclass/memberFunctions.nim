@@ -194,11 +194,10 @@ if not empty(def[^1]): #implement
 """)
     # `extern "C++"` is used to cancel out the effect of `extern "C"`
     exporting = quote do:
-      {.exportc: `wholeName`, codegenDecl: `preventDoubleDeclaration`, used, noconv.}
-      #the undocumented pragma
+      {.exportc: `wholeName`, used, noconv, codegenDecl: `preventDoubleDeclaration`.}
     this = quote do:
-      var this {.importc: "this", nodecl, used, inject, global.}: ptr `typeName`
-      #Because {.nodecl.} doesn't work on local variables
+      var this {.importc: "this", used, inject, codegenDecl: "/* */", noInit.}: ptr `typeName`
+    # The pragma placed above is a workaround. It's used because {.nodecl.} does not work on locals.
   if not staticMemberFunction:
     (func2[6]).insert(0, this)
   for i in 0 .. 3:
