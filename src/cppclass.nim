@@ -30,10 +30,7 @@ macro cppclass*(className, definition: untyped): untyped =
     valueList = initNameList(nskConst)
     code = newTree(
       nnkBracket,
-      newLit("""
-/*TYPESECTION*/
-class """ #C++ code to emit
-      )
+      newLit("class ") #C++ code to emit
     )
     r: Rand
   obj.add(newEmptyNode())
